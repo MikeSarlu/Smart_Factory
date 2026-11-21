@@ -32,7 +32,8 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "max": 16,
+          "decimals": 0,
+          "max": 270,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -40,18 +41,10 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "orange",
-                "value": 12.5
-              },
-              {
-                "color": "red",
-                "value": 13.5
               }
             ]
           },
-          "unit": "volt"
+          "unit": "degree"
         },
         "overrides": []
       },
@@ -78,11 +71,11 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT analog_ch1 AS \"value\" FROM telemetry_data ORDER BY timestamp DESC LIMIT 1",
+          "rawSql": "SELECT LEAST(GREATEST((analog_ch1 - 0) / (8.81 - 0) * 270, 0), 270) AS \"value\" FROM telemetry_data ORDER BY timestamp DESC LIMIT 1",
           "refId": "A"
         }
       ],
-      "title": "Canal Analógico 1 (Voltaje)",
+      "title": "Posición del Potenciómetro (grados)",
       "type": "gauge"
     },
     {
