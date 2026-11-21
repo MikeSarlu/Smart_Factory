@@ -96,26 +96,30 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "max": 5,
+          "max": 50,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "blue",
                 "value": null
               },
               {
+                "color": "green",
+                "value": 15
+              },
+              {
                 "color": "orange",
-                "value": 3.5
+                "value": 30
               },
               {
                 "color": "red",
-                "value": 4.5
+                "value": 40
               }
             ]
           },
-          "unit": "volt"
+          "unit": "celsius"
         },
         "overrides": []
       },
@@ -142,11 +146,11 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT analog_ch2 AS \"value\" FROM telemetry_data ORDER BY timestamp DESC LIMIT 1",
+          "rawSql": "SELECT analog_ch2 AS \"value\" FROM telemetry_data WHERE analog_ch2 IS NOT NULL ORDER BY timestamp DESC LIMIT 1",
           "refId": "A"
         }
       ],
-      "title": "Canal Analógico 2 (Voltaje)",
+      "title": "Temperatura (DHT11)",
       "type": "gauge"
     },
     {

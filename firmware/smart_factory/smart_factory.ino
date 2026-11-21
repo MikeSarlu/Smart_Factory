@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <time.h>
 #include <math.h>
+#include <DHT.h>  // Libreria "DHT sensor library" de Adafruit.
 #include "amazon_root_ca.h"
 
 // ESP32 clasico (WROOM-32 / ESP32 Dev Module); Wi-Fi de 2.4 GHz.
@@ -18,6 +19,8 @@ const uint8_t PIN_ADC = 34;  // ADC1: compatible con Wi-Fi.
 const uint8_t LED_PINS[] = {2, 4}; // led1 integrado; led2 externo con resistencia.
 const char* LED_IDS[] = {"led1", "led2"};
 const float DIVIDER_FACTOR = 5.0f;
+const uint8_t PIN_DHT = 27;  // DATA del DHT11 (pull-up de 10k a 3.3V si no es modulo).
+DHT dht(PIN_DHT, DHT11);
 const uint32_t TELEMETRY_INTERVAL = 2000;
 const uint32_t CONTROL_INTERVAL = 4000;
 const uint32_t WIFI_RETRY_INTERVAL = 15000;
@@ -66,7 +69,14 @@ void sendTelemetry() {
   const float voltage = readMotorVoltage();
   JsonObject data = doc.createNestedObject("telemetry");
   data["analog_ch1"] = voltage;
-  data["analog_ch2"] = 0.0;
+  // analog_ch2 = temperatura del DHT11 en C; null si la lectura falla.
+  const float temperature = dht.readTemperature();
+  if (isnan(temperature)) {
+    Serial.println("[DHT11] Lectura fallida; temperatura en null.");
+    data["analog_ch2"] = nullptr;
+  } else {
+    data["analog_ch2"] = roundf(temperature * 10.0f) / 10.0f;
+  }
   data["digital_ch1"] = voltage > 1.0f ? 1 : 0;
   data["digital_ch2"] = 0;
   data["digital_ch3"] = voltage > 13.5f ? 1 : 0;
@@ -133,6 +143,7 @@ void setup() {
   }
   analogReadResolution(12);
   analogSetPinAttenuation(PIN_ADC, ADC_11db);
+  dht.begin();
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
