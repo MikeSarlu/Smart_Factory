@@ -54,6 +54,12 @@ services:
     environment:
       # Plugin de formularios: permite añadir switches y botones interactivos al dashboard
       GF_INSTALL_PLUGINS: "volkovlabs-form-panel 3.2.1"
+      # Datasource de PostgreSQL (por defecto la base local; para AWS RDS defínelas en .env)
+      SF_DB_HOST: ${SF_DB_HOST:-db:5432}
+      SF_DB_NAME: ${SF_DB_NAME:-smartfactory}
+      SF_DB_USER: ${SF_DB_USER:-postgres}
+      SF_DB_PASSWORD: ${SF_DB_PASSWORD:-secretpassword}
+      SF_DB_SSLMODE: ${SF_DB_SSLMODE:-disable}
     volumes:
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards

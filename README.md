@@ -102,22 +102,25 @@ Dado que las funciones Lambda necesitan la librería `psycopg2` para conectarse 
      * `SmartFactoryTelemetry` (para procesar datos).
      * `SmartFactoryControl` (para los comandos de los LEDs).
 2. **Empaquetar el Código:** 
-   * En tu computadora, asegúrate de tener Docker instalado y ejecutándose.
+   * En tu computadora, descarga el wheel de `psycopg2` para Linux (no requiere Docker):
+     ```bash
+     python -m pip download psycopg2-binary==2.9.9 --platform manylinux2014_x86_64 --python-version 3.12 --only-binary=:all: --no-deps -d dist/wheels
+     ```
    * Ejecuta el script de empaquetado incluido en este repositorio:
      ```bash
      python build_lambda_zip.py
      ```
-   * Esto utilizará Docker para descargar las librerías binarias correctas de `psycopg2` para el entorno de Amazon Linux y creará un archivo llamado `lambda_package.zip`.
+   * Esto crea `dist/lambda_deployment.zip` con `psycopg2` y los dos `.py` en la raíz del ZIP.
 3. **Subir el ZIP:**
    * Entra a la configuración de cada una de tus dos Lambdas en AWS.
-   * En la pestaña **Code**, elige **Upload from -> .zip file** y sube el `lambda_package.zip`.
+   * En la pestaña **Code**, elige **Upload from -> .zip file** y sube `dist/lambda_deployment.zip`.
    * En los ajustes de **Runtime settings**, haz clic en **Edit** y cambia el **Handler** de la siguiente manera:
-     * Para `SmartFactoryTelemetry`, el handler debe ser: `aws.lambda_function.lambda_handler`
-     * Para `SmartFactoryControl`, el handler debe ser: `aws.lambda_control.lambda_handler`
+     * Para `SmartFactoryTelemetry`, el handler debe ser: `lambda_function.lambda_handler`
+     * Para `SmartFactoryControl`, el handler debe ser: `lambda_control.lambda_handler`
 4. **Variables de Entorno:**
    * En la pestaña **Configuration > Environment variables** de ambas Lambdas, agrega:
      * `DB_HOST`: El Endpoint de tu instancia RDS.
-     * `DB_NAME`: El nombre de tu base de datos (por defecto `postgres`).
+     * `DB_NAME`: El nombre de tu base de datos (`postgres` si no indicaste otra al crear la instancia; el mismo valor que en `.env.example`).
      * `DB_USER`: Tu usuario.
      * `DB_PASSWORD`: Tu contraseña.
      * `DB_PORT`: `5432`
@@ -139,7 +142,7 @@ Dado que las funciones Lambda necesitan la librería `psycopg2` para conectarse 
 ### Paso 4: Configurar Grafana (EC2)
 1. Instala Grafana en una instancia EC2 (Asegúrate de abrir el puerto `3000` en el Security Group de la EC2).
 2. Entra a `http://<IP-EC2>:3000` con `admin/admin`.
-3. Ve a **Connections > Data Sources > Add data source** y elige **PostgreSQL**. Configura la conexión a tu RDS. **Obligatorio:** Selecciona SSL Mode en `require`.
+3. Ve a **Connections > Data Sources > Add data source** y elige **PostgreSQL**. Configura la conexión a tu RDS. **Obligatorio:** Selecciona SSL Mode en `require`. (Con Docker, el datasource se aprovisiona desde `grafana/provisioning/datasources/datasource.yml` usando las variables `SF_DB_*` de tu `.env`.)
 4. Ve a **Dashboards > Import** y sube el archivo [grafana/dashboard.json](grafana/dashboard.json).
 5. Abre las configuraciones del dashboard (Configuración -> Variables) y cambia el valor de la variable `control_url` por tu URL de API Gateway completa terminada en `/control` (ej. `https://xxxx.execute-api.us-east-2.amazonaws.com/prod/control`).
 

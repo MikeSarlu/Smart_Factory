@@ -1,15 +1,17 @@
 apiVersion: 1
 
+# Los valores se leen de variables de entorno (ver docker-compose.yml y .env.example).
+# Por defecto apuntan a la base local de Docker; para AWS RDS define las variables SF_DB_*.
 datasources:
   - name: PostgreSQL
     type: postgres
     access: proxy
-    url: smart-factory-db.cjwquuemwozd.us-east-2.rds.amazonaws.com:5432
-    database: postgres
-    user: postgres
+    url: ${SF_DB_HOST}
+    database: ${SF_DB_NAME}
+    user: ${SF_DB_USER}
     uid: postgres-smartfactory
     secureJsonData:
-      password: 93jJmLkpW8Fa49G
+      password: ${SF_DB_PASSWORD}
     jsonData:
-      sslmode: 'require'
+      sslmode: ${SF_DB_SSLMODE}
       postgresVersion: 15
